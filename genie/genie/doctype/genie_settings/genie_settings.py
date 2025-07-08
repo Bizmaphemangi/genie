@@ -11,6 +11,7 @@ class GenieSettings(Document):
 	def validate(self):
 		# frappe.throw("validate")	
 		# self.validate_sp_access()
+		pass
 
 	def validate_sp_access(self):
 		if not self.enable_ticket_raising:
