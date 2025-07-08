@@ -10,7 +10,7 @@ from genie.utils.requests import make_request
 class GenieSettings(Document):
 	def validate(self):
 		# frappe.throw("validate")	
-		self.validate_sp_access()
+		# self.validate_sp_access()
 
 	def validate_sp_access(self):
 		if not self.enable_ticket_raising:

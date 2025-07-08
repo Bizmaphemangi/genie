@@ -114,6 +114,9 @@ override_doctype_class = {
 doc_events = {
 	"Comment": {
 		"after_insert": "genie.custom_comment.after_insert"
+	},
+	"File": {
+		"after_insert": "genie.utils.support.after_file_attachment_insert",
 	}
 }
 
@@ -126,12 +129,12 @@ scheduler_events = {
 #	"all": [
 #		"genie.tasks.all"
 #	],
-"cron": {
+	"cron": {
         "* * * * *": "genie.utils.support.auto_close_tickets"
-    }
-#	"daily": [
-#		"genie.tasks.daily"
-#	],
+    },
+	"daily": [
+		"genie.utils.support.auto_close_tickets"
+	],
 	# "hourly": [
 	# 	"genie.support.auto_close_tickets"
 	# ],

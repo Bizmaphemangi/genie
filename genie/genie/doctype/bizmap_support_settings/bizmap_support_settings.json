@@ -1,0 +1,114 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-07-01 05:44:13.066531",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enable_ticket_raising",
+  "column_break_qolu",
+  "enable_user_impersonation",
+  "support_portal_section",
+  "support_url",
+  "save_recording",
+  "close_ticket_after_days",
+  "column_break_xapa",
+  "support_api_token",
+  "max_recording_sizemb",
+  "section_break_gzhg",
+  "ticket_details"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enable_ticket_raising",
+   "fieldtype": "Check",
+   "label": " Enable Ticket Raising"
+  },
+  {
+   "fieldname": "column_break_qolu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_user_impersonation",
+   "fieldtype": "Check",
+   "label": " Enable User Impersonation"
+  },
+  {
+   "fieldname": "support_portal_section",
+   "fieldtype": "Section Break",
+   "label": "Support Portal"
+  },
+  {
+   "description": "Example: https://support.frappe.io",
+   "fieldname": "support_url",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "URL",
+   "reqd": 1
+  },
+  {
+   "fieldname": "save_recording",
+   "fieldtype": "Select",
+   "label": "Save Recording",
+   "options": "Private\nPublic"
+  },
+  {
+   "fieldname": "close_ticket_after_days",
+   "fieldtype": "Int",
+   "label": "Close Ticket After Days"
+  },
+  {
+   "fieldname": "column_break_xapa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Format: api_key:api_secret",
+   "fieldname": "support_api_token",
+   "fieldtype": "Password",
+   "in_list_view": 1,
+   "label": "API Token",
+   "reqd": 1
+  },
+  {
+   "fieldname": "max_recording_sizemb",
+   "fieldtype": "Int",
+   "label": "Max Recording Size(MB)"
+  },
+  {
+   "fieldname": "section_break_gzhg",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "ticket_details",
+   "fieldtype": "Table",
+   "label": "Ticket Details",
+   "options": "Support Ticket Details"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-07-01 23:50:40.610219",
+ "modified_by": "Administrator",
+ "module": "Genie",
+ "name": "Bizmap Support Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

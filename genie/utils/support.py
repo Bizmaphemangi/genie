@@ -5,18 +5,18 @@ import re
 import frappe
 from frappe.query_builder import DocType
 from frappe.query_builder.functions import Concat_ws
-from frappe.utils import cint, flt, get_url, now
+from frappe.utils import cint, flt, get_url, nowdate, add_days
 from frappe.utils.safe_exec import get_safe_globals, safe_eval
 import requests
 from datetime import datetime
 import json
-
-# from genie.utils.requests import make_request
+import os
+import base64
 
 
 @frappe.whitelist()
 def create_local_ticket(subject, description, category, screen_recording):
-	settings = frappe.get_cached_doc("Genie Settings")
+	settings = frappe.get_cached_doc("Bizmap Support Settings")
 	setting_details = generate_ticket_details(settings)
 
 	description = re.sub(r'<[^>]+>', '', description)   ## convert from html to plaintext
@@ -103,7 +103,7 @@ def set_status(doc):
 
 
 def upload_video_to_support(local_ticket_id):
-	settings = frappe.get_cached_doc("Genie Settings")
+	settings = frappe.get_cached_doc("Bizmap Support Settings")
 	headers = {
 		"Authorization": f"token {settings.get_password('support_api_token')}",
 	}
@@ -147,7 +147,7 @@ def upload_video_to_support(local_ticket_id):
 
 @frappe.whitelist()
 def create_ticket(title, description, category, screen_recording=None):
-	settings = frappe.get_cached_doc("Genie Settings")
+	settings = frappe.get_cached_doc("Bizmap Support Settings")
 	headers = {
 		"Authorization": f"token {settings.get_password('support_api_token')}",
 	}
@@ -252,7 +252,7 @@ def sync_details_to_support(doc):
 		}
 	frappe.logger().info(f"[SyncDetails] Status: {doc.get('custom_ticket_status')}")
 
-	settings = frappe.get_cached_doc("Genie Settings")
+	settings = frappe.get_cached_doc("Bizmap Support Settings")
 
 	payload = {'doc': doc}
 	headers = {
@@ -277,7 +277,7 @@ def sync_details_to_support(doc):
 @frappe.whitelist()
 def sync_timeline_to_support_system(doc):
 	doc = json.loads(doc)
-	settings = frappe.get_cached_doc("Genie Settings")
+	settings = frappe.get_cached_doc("Bizmap Support Settings")
 
 	idoc = frappe.get_doc("Ticket Details", doc.get('name'))
 
@@ -310,7 +310,7 @@ def auto_close_tickets():
 	"""
 	Automatically close tickets that have been Opened for more than X days (default 4).
 	"""
-	close_days = frappe.get_cached_value("Genie Settings", None, "close_ticket_after_days") or 4
+	close_days = frappe.get_cached_value("Bizmap Support Settings", None, "close_ticket_after_days") or 4
 	today = nowdate()
 	cutoff_date = add_days(today, -close_days)
 
@@ -325,3 +325,51 @@ def auto_close_tickets():
 		ticket_doc.save(ignore_permissions=True)
 
 	frappe.db.commit()
+
+
+def after_file_attachment_insert(doc, method):
+	# Only sync files attached to Ticket
+	frappe.log_error(f"File attached: {doc.file_name} to {doc.attached_to_doctype} - {doc.attached_to_name}", "File Attachment Debug")
+	if doc.attached_to_doctype != "Ticket Details":  # or your actual doctype name
+		return
+
+	if doc.is_private:
+		frappe.throw("Private files cannot be synced to the support system.")
+	ticket = frappe.get_doc(doc.attached_to_doctype, doc.attached_to_name)
+	support_ticket_id = ticket.support_ticket_id  # assume you link support ticket
+
+	if not support_ticket_id:
+		frappe.log_error("No linked support_ticket_id found for file sync.")
+		return
+
+	file_path = os.path.join(frappe.get_site_path("public"), doc.file_url.lstrip("/"))
+
+	# Read and encode file content
+	with open(file_path, "rb") as f:
+		encoded_content = base64.b64encode(f.read()).decode()
+
+	data = {
+	"file_name": doc.file_name,
+	"attached_to_doctype": "Issue",
+	"attached_to_name": support_ticket_id,
+	"content": encoded_content,
+	"uploaded_by": {
+		"email": doc.attached_by,  # usually the logged-in user
+		"full_name": frappe.get_fullname(doc.attached_by)
+		}
+	}
+
+	# API call to support site
+	settings = frappe.get_cached_doc("Bizmap Support Settings")
+	url = f"{settings.support_url}/api/method/supportsystem.supportsystem.custom.custom_api.sync_attachment"
+	headers = {
+			"Authorization": f"token {settings.get_password('support_api_token')}",
+		}
+	res = requests.post(
+		url = url,
+		headers = headers,
+		json=data
+	)
+
+	if res.status_code != 200:
+		frappe.log_error(f"File sync failed: {res.text}", "File Sync Error")

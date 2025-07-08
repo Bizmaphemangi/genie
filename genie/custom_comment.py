@@ -23,7 +23,7 @@ def after_insert(doc, method):
 
 @frappe.whitelist()
 def client_comment(doc):
-	settings = frappe.get_cached_doc("Genie Settings")
+	settings = frappe.get_cached_doc("Bizmap Support Settings")
 
 	headers = {
 		"Authorization": f"token {settings.get_password('support_api_token')}"
